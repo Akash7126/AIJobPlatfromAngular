@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+/* The JobEntry template styles are loaded from public/css (see index.html). Only Angular-specific additions live here. */
+a { cursor: pointer; }
+
+.job-item h5 a { color: inherit; }
+.job-item h5 a:hover { color: var(--primary); }
+
+.form-error { color: #dc3545; font-size: .875rem; }
+
+.pagination .page-link { color: var(--primary); }
+.pagination .page-item.active .page-link { background-color: var(--primary); border-color: var(--primary); color: #fff; }

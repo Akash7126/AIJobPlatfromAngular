@@ -1,0 +1,135 @@
+<app-page-header title="Job Detail" section="Jobs" sectionLink="/jobs" />
+
+<!-- Job Detail Start -->
+<div class="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
+    <div class="container">
+        @if (loading()) {
+            <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+        } @else if (error()) {
+            <div class="text-center py-5">
+                <p class="mb-4">{{ error() }}</p>
+                <a class="btn btn-primary py-3 px-5" routerLink="/jobs">Browse Jobs</a>
+            </div>
+        } @else if (job(); as job) {
+            <div class="row gy-5 gx-4">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center mb-5">
+                        <img class="flex-shrink-0 img-fluid border rounded" [src]="company()?.logoUrl || 'img/com-logo-2.jpg'" alt="" style="width: 80px; height: 80px;">
+                        <div class="text-start ps-4">
+                            <h3 class="mb-3">{{ job.title.en || job.title.ar }}</h3>
+                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>{{ job.location | location }}</span>
+                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>{{ job.contractType | contractType }}</span>
+                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>{{ job.salary | salary }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <h4 class="mb-3">Job description</h4>
+                        <p style="white-space: pre-line;">{{ job.summary.en || job.summary.ar }}</p>
+
+                        @if (job.skills.length) {
+                            <h4 class="mb-3">Required Skills</h4>
+                            <ul class="list-unstyled">
+                                @for (skill of job.skills; track skill) {
+                                    <li><i class="fa fa-angle-right text-primary me-2"></i>{{ skill }}</li>
+                                }
+                            </ul>
+                        }
+
+                        <h4 class="mb-3">Qualifications</h4>
+                        <ul class="list-unstyled">
+                            @if (job.educationLevel) {
+                                <li><i class="fa fa-angle-right text-primary me-2"></i>Education: {{ job.educationLevel }}</li>
+                            }
+                            @if (experience(); as exp) {
+                                <li><i class="fa fa-angle-right text-primary me-2"></i>Experience: {{ exp }}</li>
+                            }
+                            @if (job.requiredLanguages.length) {
+                                <li><i class="fa fa-angle-right text-primary me-2"></i>Languages: {{ job.requiredLanguages.join(', ') }}</li>
+                            }
+                            @for (training of job.requiredTraining; track training) {
+                                <li><i class="fa fa-angle-right text-primary me-2"></i>Training: {{ training }}</li>
+                            }
+                            <li><i class="fa fa-angle-right text-primary me-2"></i>Work format: {{ job.workFormat }}</li>
+                            @for (field of otherFields(); track field[0]) {
+                                <li><i class="fa fa-angle-right text-primary me-2"></i>{{ field[0] }}: {{ field[1] }}</li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div id="apply">
+                        <h4 class="mb-4">Apply For The Job</h4>
+                        @if (job.jobLink) {
+                            <p>This job is managed on the employer's own site.</p>
+                            <a class="btn btn-primary w-100" [href]="job.jobLink" target="_blank" rel="noopener">Apply Now</a>
+                        } @else if (applied()) {
+                            <div class="alert alert-success mb-0">
+                                <i class="fa fa-check me-2"></i>Your interest in this job has been recorded and saved to your interested list.
+                            </div>
+                        } @else {
+                            <form (ngSubmit)="apply()" #f="ngForm">
+                                <div class="row g-3">
+                                    @if (auth.isJobSeeker()) {
+                                        <div class="col-12 col-sm-6">
+                                            <input type="text" class="form-control" placeholder="Your Name" [value]="profile()?.fullName ?? auth.username()" readonly>
+                                        </div>
+                                        <div class="col-12 col-sm-6">
+                                            <input type="email" class="form-control" placeholder="Your Email" [value]="profile()?.email ?? ''" readonly>
+                                        </div>
+                                        <div class="col-12">
+                                            <small class="text-muted">Your job seeker profile will be shared with the employer.
+                                                <a routerLink="/account">Review your profile</a>.</small>
+                                        </div>
+                                    } @else {
+                                        <div class="col-12">
+                                            <p class="mb-0">Please <a routerLink="/login" [queryParams]="{ returnUrl: '/jobs/' + job.jobPostingId }">login</a>
+                                                or <a routerLink="/register">create a job seeker account</a> to apply for this job.</p>
+                                        </div>
+                                    }
+                                    @if (applyError()) {
+                                        <div class="col-12"><div class="alert alert-danger mb-0">{{ applyError() }}</div></div>
+                                    }
+                                    <div class="col-12 d-flex">
+                                        <button type="button" class="btn btn-light btn-square me-3" (click)="toggleFavorite()" title="Favorite">
+                                            <i class="fa-heart text-primary" [class.fas]="favorited()" [class.far]="!favorited()"></i>
+                                        </button>
+                                        <button class="btn btn-primary w-100" type="submit" [disabled]="applying()">
+                                            {{ applying() ? 'Applying...' : 'Apply Now' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="bg-light rounded p-5 mb-4 wow slideInUp" data-wow-delay="0.1s">
+                        <h4 class="mb-4">Job Summery</h4>
+                        <p><i class="fa fa-angle-right text-primary me-2"></i>Published On: {{ (job.publishedAtUtc ?? job.createdAtUtc) | date: 'dd MMM, yyyy' }}</p>
+                        <p><i class="fa fa-angle-right text-primary me-2"></i>Category: {{ job.categoryCode | category }}</p>
+                        <p><i class="fa fa-angle-right text-primary me-2"></i>Job Nature: {{ job.contractType | contractType }}</p>
+                        <p><i class="fa fa-angle-right text-primary me-2"></i>Salary: {{ job.salary | salary }}</p>
+                        <p><i class="fa fa-angle-right text-primary me-2"></i>Location: {{ job.location | location }}</p>
+                        <p class="m-0"><i class="fa fa-angle-right text-primary me-2"></i>Date Line: {{ job.deadlineUtc | date: 'dd MMM, yyyy' }}</p>
+                    </div>
+                    <div class="bg-light rounded p-5 wow slideInUp" data-wow-delay="0.1s">
+                        <h4 class="mb-4">Company Detail</h4>
+                        @if (company(); as c) {
+                            <h6 class="mb-2">{{ c.name }}
+                                @if (c.verified) { <i class="fa fa-check-circle text-primary ms-1" title="Verified employer"></i> }
+                            </h6>
+                            <p class="mb-2">{{ c.background.en || c.background.ar }}</p>
+                            @if (c.industry) { <p class="mb-1"><i class="fa fa-angle-right text-primary me-2"></i>Industry: {{ c.industry }}</p> }
+                            @if (c.companySize) { <p class="mb-1"><i class="fa fa-angle-right text-primary me-2"></i>Size: {{ c.companySize }}</p> }
+                            @if (c.website) { <p class="m-0"><i class="fa fa-angle-right text-primary me-2"></i><a [href]="c.website" target="_blank" rel="noopener">{{ c.website }}</a></p> }
+                        } @else {
+                            <p class="m-0">{{ job.source === 'External' ? 'This job was collected from an external job site.' : 'Company information is not available.' }}</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!-- Job Detail End -->

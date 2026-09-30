@@ -1,0 +1,77 @@
+<!-- Navbar Start -->
+<nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
+    <a routerLink="/" class="navbar-brand d-flex align-items-center text-center py-0 px-4 px-lg-5">
+        <h1 class="m-0 text-primary">JobEntry</h1>
+    </a>
+    <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="navbar-nav ms-auto p-4 p-lg-0">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item nav-link">Home</a>
+            <a routerLink="/about" routerLinkActive="active" class="nav-item nav-link">About</a>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" [class.active]="isJobsActive()" data-bs-toggle="dropdown" (click)="$event.preventDefault()">Jobs</a>
+                <div class="dropdown-menu rounded-0 m-0">
+                    <a routerLink="/jobs" class="dropdown-item">Job List</a>
+                    <a routerLink="/category" class="dropdown-item">Job Category</a>
+                    @if (auth.isJobSeeker()) {
+                        <a routerLink="/account/matches" class="dropdown-item">AI Job Matches</a>
+                        <a routerLink="/favorites" class="dropdown-item">Favorite Jobs</a>
+                        <a routerLink="/account/saved-searches" class="dropdown-item">Saved Searches</a>
+                    }
+                    @if (auth.isEmployer()) {
+                        <a routerLink="/my-jobs" class="dropdown-item">My Job Postings</a>
+                        <a routerLink="/account/candidates" class="dropdown-item">Find Candidates</a>
+                    }
+                </div>
+            </div>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" [class.active]="isPagesActive()" data-bs-toggle="dropdown" (click)="$event.preventDefault()">Pages</a>
+                <div class="dropdown-menu rounded-0 m-0">
+                    <a routerLink="/news" class="dropdown-item">News</a>
+                    <a routerLink="/help" class="dropdown-item">Help Center</a>
+                    <a routerLink="/api-docs" class="dropdown-item">API Documentation</a>
+                    <a routerLink="/testimonial" class="dropdown-item">Testimonial</a>
+                    <a routerLink="/404" class="dropdown-item">404</a>
+                </div>
+            </div>
+            <a routerLink="/contact" routerLinkActive="active" class="nav-item nav-link">Contact</a>
+            @if (auth.isLoggedIn()) {
+                <a routerLink="/account/notifications" routerLinkActive="active" class="nav-item nav-link position-relative" title="Notifications">
+                    <i class="fa fa-bell"></i>
+                    @if (notifications.unread() > 0) {
+                        <span class="badge rounded-pill bg-danger position-absolute" style="top: 18px; right: 2px; font-size: .6rem;">{{ notifications.unread() }}</span>
+                    }
+                </a>
+            }
+            <div class="nav-item dropdown">
+                @if (auth.isLoggedIn()) {
+                    <a href="#" class="nav-link dropdown-toggle" [class.active]="isAccountActive()" data-bs-toggle="dropdown" (click)="$event.preventDefault()">
+                        <i class="fa fa-user-circle me-2"></i>{{ auth.username() }}
+                    </a>
+                    <div class="dropdown-menu rounded-0 m-0">
+                        @if (auth.isAdmin()) {
+                            <a routerLink="/admin" class="dropdown-item">Admin Console</a>
+                        } @else if (auth.isPartner()) {
+                            <a routerLink="/partner" class="dropdown-item">Partner Console</a>
+                        } @else {
+                            <a routerLink="/account" class="dropdown-item">{{ auth.isEmployer() ? 'Employer Dashboard' : 'My Account' }}</a>
+                        }
+                        <a routerLink="/account/notifications" class="dropdown-item">Notifications</a>
+                        <a routerLink="/account/security" class="dropdown-item">Password & Security</a>
+                        <a href="#" class="dropdown-item" (click)="$event.preventDefault(); auth.logout()">Logout</a>
+                    </div>
+                } @else {
+                    <a href="#" class="nav-link dropdown-toggle" [class.active]="isAccountActive()" data-bs-toggle="dropdown" (click)="$event.preventDefault()">Account</a>
+                    <div class="dropdown-menu rounded-0 m-0">
+                        <a routerLink="/login" class="dropdown-item">Login</a>
+                        <a routerLink="/register" class="dropdown-item">Register</a>
+                    </div>
+                }
+            </div>
+        </div>
+        <a routerLink="/post-job" class="btn btn-primary rounded-0 py-4 px-lg-5 d-none d-lg-block">Post A Job<i class="fa fa-arrow-right ms-3"></i></a>
+    </div>
+</nav>
+<!-- Navbar End -->

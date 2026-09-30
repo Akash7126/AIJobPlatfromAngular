@@ -1,0 +1,142 @@
+<!-- Registration (level 2) -->
+<div class="bg-light rounded p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Company Registration</h5>
+        @if (registration.value(); as r) {
+            <span class="badge" [class.bg-primary]="r.status === 'Approved'" [class.bg-secondary]="r.status !== 'Approved'">{{ r.status }}</span>
+        }
+    </div>
+    @if (registration.value()?.approvedAtUtc) {
+        <p class="small text-muted">Approved on {{ registration.value()!.approvedAtUtc | date: 'dd MMM, yyyy' }}.</p>
+    }
+    @if (level2State.message()) { <div class="alert" [class.alert-success]="level2State.ok()" [class.alert-danger]="!level2State.ok()">{{ level2State.message() }}</div> }
+    <form #lf="ngForm" (ngSubmit)="saveLevel2(lf)" novalidate>
+        <div class="row g-3">
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cName" name="cName" placeholder="Name" required [(ngModel)]="level2.companyName">
+                <label for="cName">Company Name</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cId" name="cId" placeholder="ID" required [(ngModel)]="level2.companyId">
+                <label for="cId">Company ID</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cReg" name="cReg" placeholder="Reg" required [(ngModel)]="level2.registrationNumber">
+                <label for="cReg">Registration Number</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cWeb" name="cWeb" placeholder="https://" required [(ngModel)]="level2.website">
+                <label for="cWeb">Website</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cInd" name="cInd" placeholder="Industry" required [(ngModel)]="level2.industry">
+                <label for="cInd">Industry</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <select class="form-select" id="cSize" name="cSize" [(ngModel)]="level2.size">
+                    @for (s of sizes; track s) { <option [value]="s">{{ s }}</option> }
+                </select>
+                <label for="cSize">Company Size</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cGov" name="cGov" placeholder="Governorate" required [(ngModel)]="level2.governorate">
+                <label for="cGov">Governorate</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cCity" name="cCity" placeholder="City" required [(ngModel)]="level2.city">
+                <label for="cCity">City</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="cStreet" name="cStreet" placeholder="Street" [(ngModel)]="level2.street">
+                <label for="cStreet">Street</label></div></div>
+            <div class="col-12"><div class="form-floating">
+                <textarea class="form-control" id="cDesc" name="cDesc" placeholder="About" style="height: 110px" required [(ngModel)]="level2.description"></textarea>
+                <label for="cDesc">Company Description</label></div></div>
+            <div class="col-12"><button class="btn btn-primary px-4" type="submit" [disabled]="level2State.busy()">Submit Company Details</button></div>
+        </div>
+    </form>
+</div>
+
+<!-- Media -->
+<div class="bg-light rounded p-4 mb-4">
+    <h5 class="mb-3">Logo & Media</h5>
+    @for (m of media.value() ?? []; track m.companyMediaId) {
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <span>
+                <i class="fa text-primary me-2" [class.fa-image]="m.kind !== 'RegistrationDocument'" [class.fa-file-alt]="m.kind === 'RegistrationDocument'"></i>
+                {{ m.fileName }} <small class="text-muted">({{ m.kind }}, {{ m.sizeBytes / 1024 | number: '1.0-0' }} KB)</small>
+                @if (m.isPrimaryLogo) { <span class="badge bg-primary ms-2">Primary logo</span> }
+            </span>
+            <span class="d-flex gap-2">
+                @if (m.kind === 'Logo' && !m.isPrimaryLogo) { <button class="btn btn-sm btn-outline-primary" (click)="setPrimary(m)">Make primary</button> }
+                <button class="btn btn-sm btn-light text-danger" (click)="removeMedia(m)"><i class="fa fa-trash"></i></button>
+            </span>
+        </div>
+    } @empty {
+        <p class="text-muted">No media uploaded yet.</p>
+    }
+    <div class="row g-2 mt-2 align-items-center">
+        <div class="col-md-5"><input type="file" class="form-control bg-white" (change)="mediaFile = $any($event.target).files?.[0] ?? null"></div>
+        <div class="col-md-4">
+            <select class="form-select" [(ngModel)]="mediaKind">
+                @for (k of mediaKinds; track k) { <option [value]="k">{{ k }}</option> }
+            </select>
+        </div>
+        <div class="col-md-3"><button class="btn btn-primary w-100" [disabled]="!mediaFile || mediaState.busy()" (click)="uploadMedia()">Upload</button></div>
+    </div>
+    @if (mediaState.message()) { <small [class.text-danger]="!mediaState.ok()" [class.text-success]="mediaState.ok()">{{ mediaState.message() }}</small> }
+</div>
+
+<!-- Public company page -->
+<div class="bg-light rounded p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Public Company Page</h5>
+        @if (auth.accountId(); as id) { <a class="btn btn-sm btn-outline-primary" [routerLink]="['/companies', id]">View page</a> }
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6"><div class="form-floating">
+            <textarea class="form-control" id="bgEn" placeholder="About" style="height: 120px" [(ngModel)]="page.backgroundEn"></textarea>
+            <label for="bgEn">About the company (English)</label></div></div>
+        <div class="col-md-6"><div class="form-floating">
+            <textarea class="form-control" id="bgAr" dir="rtl" placeholder="About" style="height: 120px" [(ngModel)]="page.backgroundAr"></textarea>
+            <label for="bgAr">About the company (Arabic)</label></div></div>
+        <div class="col-12"><div class="form-floating">
+            <textarea class="form-control" id="hl" placeholder="Highlights" style="height: 100px" [(ngModel)]="page.highlights"></textarea>
+            <label for="hl">Highlights (one per line)</label></div></div>
+        <div class="col-12 d-flex align-items-center gap-3">
+            <button class="btn btn-primary px-4" [disabled]="pageState.busy()" (click)="savePage()">Save Page</button>
+            @if (pageState.message()) { <small [class.text-danger]="!pageState.ok()" [class.text-success]="pageState.ok()">{{ pageState.message() }}</small> }
+        </div>
+    </div>
+</div>
+
+<!-- Government verification -->
+<div class="bg-light rounded p-4 mb-4">
+    <h5 class="mb-3">Government Verification</h5>
+    @if (verification(); as v) {
+        <div class="bg-white border rounded p-3 mb-3">
+            <app-json-view [value]="{ state: v.state, method: v.method, attempts: v.attemptCount, decidedAt: v.decidedAtUtc, failureReason: v.failureReason }" />
+            <button class="btn btn-sm btn-outline-primary mt-2" (click)="refreshVerification()">Refresh status</button>
+        </div>
+    }
+    <form #vf="ngForm" (ngSubmit)="submitVerification(vf)" novalidate>
+        <div class="row g-3">
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="vReg" name="vReg" placeholder="Reg" required [(ngModel)]="verify.registrationNumber">
+                <label for="vReg">Registration Number</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="vVat" name="vVat" placeholder="VAT" required [(ngModel)]="verify.vatNumber">
+                <label for="vVat">VAT Number</label></div></div>
+            <div class="col-md-4"><div class="form-floating">
+                <input class="form-control" id="vMob" name="vMob" placeholder="Mobile" required [(ngModel)]="verify.mobileNumber">
+                <label for="vMob">Mobile Number</label></div></div>
+            <div class="col-12 d-flex align-items-center gap-3">
+                <button class="btn btn-primary px-4" type="submit" [disabled]="verifyState.busy()">Request Verification</button>
+                @if (verifyState.message()) { <small [class.text-danger]="!verifyState.ok()" [class.text-success]="verifyState.ok()">{{ verifyState.message() }}</small> }
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Company documents -->
+<div class="bg-light rounded p-4">
+    <h5 class="mb-3">Company Documents</h5>
+    <div class="row g-2 align-items-center">
+        <div class="col-md-5"><input type="file" class="form-control bg-white" (change)="docFile = $any($event.target).files?.[0] ?? null"></div>
+        <div class="col-md-4"><input class="form-control" placeholder="Document type" [(ngModel)]="docType"></div>
+        <div class="col-md-3"><button class="btn btn-primary w-100" [disabled]="!docFile || !docType || docState.busy()" (click)="uploadDocument()">Attach</button></div>
+    </div>
+    @if (docState.message()) { <small [class.text-danger]="!docState.ok()" [class.text-success]="docState.ok()">{{ docState.message() }}</small> }
+</div>

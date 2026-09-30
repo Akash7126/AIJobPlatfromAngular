@@ -1,0 +1,171 @@
+@if (job.value(); as j) {
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="mb-1">{{ j.title.en || j.title.ar }}</h3>
+            <span class="badge bg-secondary me-2">{{ j.status }}</span>
+            @if (j.adminSuspended) { <span class="badge bg-danger me-2">Suspended by admin</span> }
+            <small class="text-muted">Deadline {{ j.deadlineUtc | date: 'dd MMM, yyyy' }}</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" [routerLink]="['/jobs', j.jobPostingId]">View public page</a>
+            <a class="btn btn-light" routerLink="/my-jobs">All postings</a>
+        </div>
+    </div>
+
+    <div class="tab-class">
+        <ul class="nav nav-pills d-inline-flex border-bottom mb-4">
+            <li class="nav-item"><a class="d-flex align-items-center text-start mx-3 ms-0 pb-3" [class.active]="tab() === 'edit'" href="#" (click)="$event.preventDefault(); select('edit')"><h6 class="mt-n1 mb-0">Edit & Renew</h6></a></li>
+            <li class="nav-item"><a class="d-flex align-items-center text-start mx-3 pb-3" [class.active]="tab() === 'candidates'" href="#" (click)="$event.preventDefault(); select('candidates')"><h6 class="mt-n1 mb-0">Candidates</h6></a></li>
+            <li class="nav-item"><a class="d-flex align-items-center text-start mx-3 pb-3" [class.active]="tab() === 'shortlist'" href="#" (click)="$event.preventDefault(); select('shortlist')"><h6 class="mt-n1 mb-0">AI Shortlist</h6></a></li>
+            <li class="nav-item"><a class="d-flex align-items-center text-start mx-3 me-0 pb-3" [class.active]="tab() === 'history'" href="#" (click)="$event.preventDefault(); select('history')"><h6 class="mt-n1 mb-0">Status History</h6></a></li>
+        </ul>
+    </div>
+
+    @switch (tab()) {
+        @case ('edit') {
+            <div class="bg-light rounded p-4 mb-4">
+                <h5 class="mb-3">Edit Posting</h5>
+                <div class="row g-3">
+                    <div class="col-md-6"><div class="form-floating"><input class="form-control" id="tEn" placeholder="Title" [(ngModel)]="form.titleEn"><label for="tEn">Title (English)</label></div></div>
+                    <div class="col-md-6"><div class="form-floating"><input class="form-control" id="tAr" dir="rtl" placeholder="Title" [(ngModel)]="form.titleAr"><label for="tAr">Title (Arabic)</label></div></div>
+                    <div class="col-md-4"><div class="form-floating"><input class="form-control" id="cat" placeholder="Category" [(ngModel)]="form.categoryCode"><label for="cat">Category code</label></div></div>
+                    <div class="col-md-4"><div class="form-floating">
+                        <select class="form-select" id="ct" [(ngModel)]="form.contractType">@for (c of contractTypes; track c.value) { <option [value]="c.value">{{ c.label }}</option> }</select>
+                        <label for="ct">Job Nature</label></div></div>
+                    <div class="col-md-4"><div class="form-floating">
+                        <select class="form-select" id="wf" [(ngModel)]="form.workFormat">@for (w of workFormats; track w) { <option [value]="w">{{ w }}</option> }</select>
+                        <label for="wf">Work Format</label></div></div>
+                    <div class="col-md-4"><div class="form-floating"><input class="form-control" id="city" placeholder="City" [(ngModel)]="form.city"><label for="city">City</label></div></div>
+                    <div class="col-md-4"><div class="form-floating"><input class="form-control" id="gov" placeholder="Governorate" [(ngModel)]="form.governorate"><label for="gov">Governorate</label></div></div>
+                    <div class="col-md-4"><div class="form-floating"><input class="form-control" id="edu" placeholder="Education" [(ngModel)]="form.educationLevel"><label for="edu">Education Level</label></div></div>
+                    <div class="col-md-3"><div class="form-floating"><input class="form-control" type="number" id="smin" placeholder="Min" [(ngModel)]="form.salaryMin"><label for="smin">Salary From</label></div></div>
+                    <div class="col-md-3"><div class="form-floating"><input class="form-control" type="number" id="smax" placeholder="Max" [(ngModel)]="form.salaryMax"><label for="smax">Salary To</label></div></div>
+                    <div class="col-md-2"><div class="form-floating"><input class="form-control" id="cur" placeholder="USD" [(ngModel)]="form.salaryCurrency"><label for="cur">Currency</label></div></div>
+                    <div class="col-md-2"><div class="form-floating"><input class="form-control" type="number" id="emin" placeholder="0" [(ngModel)]="form.minExperienceYears"><label for="emin">Min Exp.</label></div></div>
+                    <div class="col-md-2"><div class="form-floating"><input class="form-control" type="number" id="emax" placeholder="0" [(ngModel)]="form.maxExperienceYears"><label for="emax">Max Exp.</label></div></div>
+                    <div class="col-md-6"><div class="form-floating"><input class="form-control" id="skills" placeholder="Skills" [(ngModel)]="form.skills"><label for="skills">Skills (comma separated)</label></div></div>
+                    <div class="col-md-6"><div class="form-floating"><input class="form-control" id="langs" placeholder="Languages" [(ngModel)]="form.languages"><label for="langs">Languages (comma separated)</label></div></div>
+                    <div class="col-md-4"><div class="form-floating"><input class="form-control" type="date" id="dl" [(ngModel)]="form.deadline"><label for="dl">Deadline</label></div></div>
+                    <div class="col-md-4"><div class="form-floating">
+                        <select class="form-select" id="vis" [(ngModel)]="form.visibilityScope">
+                            <option value="Public">Public</option><option value="Private">Private</option><option value="Targeted">Targeted job seekers</option>
+                        </select><label for="vis">Visibility</label></div></div>
+                    <div class="col-md-4"><div class="form-floating"><input class="form-control" id="link" placeholder="https://" [(ngModel)]="form.jobLink"><label for="link">External apply link</label></div></div>
+                    @if (form.visibilityScope === 'Targeted') {
+                        <div class="col-12"><div class="form-floating"><input class="form-control" id="targets" placeholder="IDs" [(ngModel)]="form.targetJobSeekerIds"><label for="targets">Target job seeker IDs (comma separated)</label></div></div>
+                    }
+                    <div class="col-12"><div class="form-floating"><textarea class="form-control" id="sEn" placeholder="Description" style="height: 140px" [(ngModel)]="form.summaryEn"></textarea><label for="sEn">Description (English)</label></div></div>
+                    <div class="col-12"><div class="form-floating"><textarea class="form-control" id="sAr" dir="rtl" placeholder="Description" style="height: 110px" [(ngModel)]="form.summaryAr"></textarea><label for="sAr">Description (Arabic)</label></div></div>
+                    <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" id="ac" [(ngModel)]="form.autoClose"><label class="form-check-label" for="ac">Close automatically at the deadline</label></div></div>
+                    <div class="col-12 d-flex align-items-center gap-3">
+                        <button class="btn btn-primary px-4" [disabled]="saveState.busy()" (click)="save()">Save Changes</button>
+                        @if (saveState.message()) { <small [class.text-danger]="!saveState.ok()" [class.text-success]="saveState.ok()">{{ saveState.message() }}</small> }
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-light rounded p-4">
+                <h5 class="mb-3">Renew Posting</h5>
+                <p class="small text-muted">Re-open an expired posting with a new deadline.</p>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <input type="date" class="form-control w-auto" [(ngModel)]="renewDeadline">
+                    <button class="btn btn-primary" [disabled]="!renewDeadline || renewState.busy()" (click)="renew()">Renew</button>
+                    @if (renewState.message()) { <small [class.text-danger]="!renewState.ok()" [class.text-success]="renewState.ok()">{{ renewState.message() }}</small> }
+                </div>
+            </div>
+        }
+
+        @case ('candidates') {
+            <div class="bg-light rounded p-4 mb-4">
+                <h5 class="mb-3">Qualification Threshold</h5>
+                <p class="small text-muted">Candidates below this match percentage are not recommended for this job.
+                    @if (threshold(); as t) { Current: <strong>{{ t.percent }}%</strong> (v{{ t.version }}). }</p>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <input type="number" min="0" max="100" class="form-control w-auto" [(ngModel)]="thresholdPercent">
+                    <button class="btn btn-primary" [disabled]="thresholdState.busy()" (click)="saveThreshold()">Save</button>
+                    @if (thresholdState.message()) { <small [class.text-danger]="!thresholdState.ok()" [class.text-success]="thresholdState.ok()">{{ thresholdState.message() }}</small> }
+                </div>
+            </div>
+
+            <div class="bg-light rounded p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">Matching Candidates</h5>
+                    <select class="form-select w-auto" [(ngModel)]="candidateSource" (change)="loadCandidates()">
+                        <option value="ai-matches">AI match scores</option>
+                        <option value="ai-recommendations">AI recommendations</option>
+                        <option value="sourcing-recommendations">Sourcing recommendations</option>
+                        <option value="sourcing-ranking">Ranking with strengths & gaps</option>
+                    </select>
+                </div>
+                @for (row of candidates.value()?.items ?? []; track $index) {
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div>
+                            <strong>Candidate {{ candidateId(row).slice(0, 8) }}</strong>
+                            @if (row['rank']) { <span class="badge bg-secondary ms-2">#{{ row['rank'] }}</span> }
+                            @if (row['strengths']) { <small class="d-block">Strengths: {{ $any(row['strengths']).join(', ') || '—' }}</small> }
+                            @if (row['gaps']) { <small class="d-block text-muted">Gaps: {{ $any(row['gaps']).join(', ') || '—' }}</small> }
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary fs-6">{{ $any(row['score']) | number: '1.0-0' }}%</span>
+                            <button class="btn btn-sm btn-outline-primary" (click)="addToPool(row)">Add to pool</button>
+                        </div>
+                    </div>
+                } @empty {
+                    <p class="text-muted mb-0">{{ candidates.loading() ? 'Loading...' : candidates.error() ?? 'No matching candidates yet.' }}</p>
+                }
+                @if (poolState.message()) { <small [class.text-danger]="!poolState.ok()" [class.text-success]="poolState.ok()">{{ poolState.message() }}</small> }
+            </div>
+        }
+
+        @case ('shortlist') {
+            <div class="bg-light rounded p-4 mb-4">
+                <h5 class="mb-3">Request An AI Shortlist</h5>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <label class="small" for="size">Size</label>
+                    <input id="size" type="number" min="1" class="form-control w-auto" [(ngModel)]="shortlistSize">
+                    <button class="btn btn-primary" [disabled]="shortlistState.busy()" (click)="requestShortlist()">Generate Shortlist</button>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <input class="form-control w-auto" placeholder="Existing shortlist ID" [(ngModel)]="shortlistLookup">
+                    <button class="btn btn-outline-primary" [disabled]="!shortlistLookup || shortlistState.busy()" (click)="fetchShortlist(shortlistLookup)">Load</button>
+                    @if (shortlistState.message()) { <small [class.text-danger]="!shortlistState.ok()" [class.text-success]="shortlistState.ok()">{{ shortlistState.message() }}</small> }
+                </div>
+            </div>
+            @if (shortlist(); as s) {
+                <div class="bg-light rounded p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Shortlist <small class="text-muted">{{ s.id }}</small></h5>
+                        <span><span class="badge bg-secondary me-2">{{ s.status }}</span><button class="btn btn-sm btn-outline-primary" (click)="fetchShortlist(s.id)">Refresh</button></span>
+                    </div>
+                    @if (s.failureReason) { <div class="alert alert-warning">{{ s.failureReason }}</div> }
+                    @for (e of s.items; track e.profileId) {
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <span><span class="badge bg-primary me-2">#{{ e.rank }}</span>Candidate {{ e.profileId.slice(0, 8) }}</span>
+                            <span class="d-flex align-items-center gap-2">
+                                <strong>{{ e.score | number: '1.0-0' }}%</strong>
+                                <button class="btn btn-sm btn-outline-primary" (click)="addToPool({ profileId: e.profileId })">Add to pool</button>
+                            </span>
+                        </div>
+                    } @empty {
+                        <p class="text-muted mb-0">{{ s.status === 'Completed' ? 'No candidates qualified.' : 'The shortlist is being computed. Refresh in a moment.' }}</p>
+                    }
+                </div>
+            }
+        }
+
+        @case ('history') {
+            <div class="bg-light rounded p-4">
+                <h5 class="mb-3">Status History</h5>
+                @if (history.value(); as h) {
+                    <app-json-view [value]="h" emptyText="No status changes yet." />
+                } @else {
+                    <p class="text-muted mb-0">{{ history.loading() ? 'Loading...' : history.error() }}</p>
+                }
+            </div>
+        }
+    }
+} @else {
+    <div class="text-center py-5">
+        @if (job.loading()) { <div class="spinner-border text-primary" role="status"></div> } @else { <p>{{ job.error() }}</p> }
+    </div>
+}

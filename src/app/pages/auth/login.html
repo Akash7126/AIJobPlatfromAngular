@@ -1,0 +1,105 @@
+<app-page-header title="Login" section="Account" sectionLink="/login" />
+
+<div class="container-xxl py-5">
+    <div class="container">
+        <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Login To Your Account</h1>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="bg-light rounded p-5">
+                    @if (activated()) {
+                        <div class="alert alert-success">Your account is active. You can log in now.</div>
+                    }
+                    @if (error()) {
+                        <div class="alert alert-danger">{{ error() }}</div>
+                    }
+
+                    @switch (step()) {
+                        @case ('credentials') {
+                            <form #f="ngForm" (ngSubmit)="submitCredentials(f)" novalidate>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="actorType" name="actorType" [(ngModel)]="actorType">
+                                                @for (a of actorTypes; track a.value) { <option [value]="a.value">{{ a.label }}</option> }
+                                            </select>
+                                            <label for="actorType">I am a</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="username" name="username" placeholder="Email or mobile" required
+                                                   [(ngModel)]="username" #u="ngModel" [class.is-invalid]="u.invalid && u.touched" autocomplete="username">
+                                            <label for="username">Email or Mobile</label>
+                                        </div>
+                                    </div>
+                                    @if (mechanism === 'password') {
+                                        <div class="col-12">
+                                            <div class="form-floating">
+                                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required
+                                                       [(ngModel)]="password" #p="ngModel" [class.is-invalid]="p.invalid && p.touched" autocomplete="current-password">
+                                                <label for="password">Password</label>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="col-12">
+                                        <button class="btn btn-primary w-100 py-3" type="submit" [disabled]="busy()">
+                                            {{ busy() ? 'Signing in...' : mechanism === 'password' ? 'Login' : 'Email Me A Login Code' }}
+                                        </button>
+                                    </div>
+                                    <div class="col-12 text-center">
+                                        @if (mechanism === 'password') {
+                                            <a href="#" (click)="$event.preventDefault(); mechanism = 'email-verification'">Login with a code sent to my email instead</a>
+                                        } @else {
+                                            <a href="#" (click)="$event.preventDefault(); mechanism = 'password'">Login with my password instead</a>
+                                        }
+                                    </div>
+                                    <div class="col-12 text-center">
+                                        Don't have an account? <a routerLink="/register">Register now</a>
+                                    </div>
+                                </div>
+                            </form>
+                        }
+                        @case ('emailCode') {
+                            <p>We sent a login code to the email address of <strong>{{ username }}</strong>.</p>
+                            <form (ngSubmit)="submitEmailCode()">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="emailCode" name="emailCode" placeholder="Code" required [(ngModel)]="emailCode" autocomplete="one-time-code">
+                                            <label for="emailCode">Login Code</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12"><button class="btn btn-primary w-100 py-3" type="submit" [disabled]="busy()">Verify & Login</button></div>
+                                    <div class="col-12 text-center"><a href="#" (click)="$event.preventDefault(); back()">Back</a></div>
+                                </div>
+                            </form>
+                        }
+                        @case ('mfa') {
+                            @if (enrollment(); as e) {
+                                <h5 class="mb-3">Set up two-factor authentication</h5>
+                                <p>Add this account to your authenticator app, then enter the 6-digit code it shows.</p>
+                                <p class="mb-1 small text-muted">Secret key</p>
+                                <p><code class="fs-6">{{ e.secret }}</code></p>
+                                <p class="small text-break"><a [href]="e.provisioningUri">{{ e.provisioningUri }}</a></p>
+                            } @else {
+                                <p>Enter the 6-digit code from your authenticator app.</p>
+                            }
+                            <form (ngSubmit)="submitMfa()">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <input type="text" inputmode="numeric" class="form-control" id="mfaCode" name="mfaCode" placeholder="123456" required [(ngModel)]="mfaCode" autocomplete="one-time-code">
+                                            <label for="mfaCode">Authentication Code</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12"><button class="btn btn-primary w-100 py-3" type="submit" [disabled]="busy()">Verify & Login</button></div>
+                                    <div class="col-12 text-center"><a href="#" (click)="$event.preventDefault(); back()">Back</a></div>
+                                </div>
+                            </form>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

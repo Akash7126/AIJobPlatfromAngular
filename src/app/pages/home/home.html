@@ -1,0 +1,33 @@
+<!-- Carousel Start -->
+<div class="container-fluid p-0">
+    <div #carousel class="owl-carousel header-carousel position-relative">
+        @for (slide of slides; track slide.image) {
+            <div class="owl-carousel-item position-relative">
+                <img class="img-fluid" [src]="slide.image" alt="">
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(43, 57, 64, .5);">
+                    <div class="container">
+                        <div class="row justify-content-start">
+                            <div class="col-10 col-lg-8">
+                                <h1 class="display-3 text-white animated slideInDown mb-4">{{ slide.title }}</h1>
+                                <p class="fs-5 fw-medium text-white mb-4 pb-2">Thousands of jobs from verified employers, matched to your skills by AI. Search, save and apply in a few clicks.</p>
+                                <a routerLink="/jobs" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Search A Job</a>
+                                <a routerLink="/post-job" class="btn btn-secondary py-md-3 px-md-5 animated slideInRight">Find A Talent</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!-- Carousel End -->
+
+<app-search-bar />
+
+<app-category-grid />
+
+<app-about-section />
+
+<app-job-listing [pageSize]="5" />
+
+<app-testimonials />

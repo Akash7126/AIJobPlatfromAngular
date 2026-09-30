@@ -1,0 +1,154 @@
+<app-page-header title="Post A Job" section="Jobs" sectionLink="/my-jobs" />
+
+<div class="container-xxl py-5">
+    <div class="container">
+        <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Find The Right Talent</h1>
+        <div class="row justify-content-center">
+            <div class="col-lg-10 wow fadeInUp" data-wow-delay="0.3s">
+                <p class="mb-4">New postings are saved as a draft. Publish them from <strong>My Job Postings</strong> when you are ready.</p>
+                @if (error()) { <div class="alert alert-danger">{{ error() }}</div> }
+                <form #f="ngForm" (ngSubmit)="submit(f)" novalidate>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="titleEn" name="titleEn" placeholder="Job Title" required
+                                       [(ngModel)]="model.titleEn" #te="ngModel" [class.is-invalid]="te.invalid && te.touched">
+                                <label for="titleEn">Job Title (English)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="titleAr" name="titleAr" placeholder="Job Title (Arabic)" dir="rtl" [(ngModel)]="model.titleAr">
+                                <label for="titleAr">Job Title (Arabic, optional)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="category" name="category" required [(ngModel)]="model.categoryCode" #cat="ngModel" [class.is-invalid]="cat.invalid && cat.touched">
+                                    <option value="" disabled>Select...</option>
+                                    @for (c of categories(); track c.code) { <option [value]="c.code">{{ c.name }}</option> }
+                                </select>
+                                <label for="category">Category</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="contractType" name="contractType" [(ngModel)]="model.contractType">
+                                    @for (c of contractTypes; track c.value) { <option [value]="c.value">{{ c.label }}</option> }
+                                </select>
+                                <label for="contractType">Job Nature</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="workFormat" name="workFormat" [(ngModel)]="model.workFormat">
+                                    @for (w of workFormats; track w) { <option [value]="w">{{ w }}</option> }
+                                </select>
+                                <label for="workFormat">Work Format</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="city" name="city" placeholder="City" [(ngModel)]="model.city">
+                                <label for="city">City</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="governorate" name="governorate" placeholder="Governorate" [(ngModel)]="model.governorate">
+                                <label for="governorate">Governorate</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="education" name="education" [(ngModel)]="model.educationLevel">
+                                    <option value="">Any</option>
+                                    @for (e of educationLevels; track e) { <option [value]="e">{{ e }}</option> }
+                                </select>
+                                <label for="education">Education Level</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="number" min="0" class="form-control" id="salaryMin" name="salaryMin" placeholder="Min" [(ngModel)]="model.salaryMin">
+                                <label for="salaryMin">Salary From</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="number" min="0" class="form-control" id="salaryMax" name="salaryMax" placeholder="Max" [(ngModel)]="model.salaryMax">
+                                <label for="salaryMax">Salary To</label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-floating">
+                                <input type="text" maxlength="3" class="form-control" id="currency" name="currency" placeholder="USD" [(ngModel)]="model.salaryCurrency">
+                                <label for="currency">Currency</label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-floating">
+                                <input type="number" min="0" class="form-control" id="minExp" name="minExp" placeholder="0" [(ngModel)]="model.minExperienceYears">
+                                <label for="minExp">Min Exp. (yrs)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-floating">
+                                <input type="number" min="0" class="form-control" id="maxExp" name="maxExp" placeholder="0" [(ngModel)]="model.maxExperienceYears">
+                                <label for="maxExp">Max Exp. (yrs)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="skills" name="skills" placeholder="Skills" required
+                                       [(ngModel)]="model.skills" #sk="ngModel" [class.is-invalid]="sk.invalid && sk.touched">
+                                <label for="skills">Skills (comma separated)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="languages" name="languages" placeholder="Languages" [(ngModel)]="model.languages">
+                                <label for="languages">Languages (comma separated)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" id="deadline" name="deadline" placeholder="Deadline" required
+                                       [(ngModel)]="model.deadline" #dl="ngModel" [class.is-invalid]="dl.invalid && dl.touched">
+                                <label for="deadline">Application Deadline</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="url" class="form-control" id="jobLink" name="jobLink" placeholder="https://" [(ngModel)]="model.jobLink">
+                                <label for="jobLink">External Apply Link (optional)</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="summaryEn" name="summaryEn" placeholder="Job description" style="height: 150px" required
+                                          [(ngModel)]="model.summaryEn" #se="ngModel" [class.is-invalid]="se.invalid && se.touched"></textarea>
+                                <label for="summaryEn">Job Description (English)</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="summaryAr" name="summaryAr" placeholder="Job description (Arabic)" dir="rtl" style="height: 120px" [(ngModel)]="model.summaryAr"></textarea>
+                                <label for="summaryAr">Job Description (Arabic, optional)</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoClose" name="autoClose" [(ngModel)]="model.autoClose">
+                                <label class="form-check-label" for="autoClose">Close the posting automatically at the deadline</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary w-100 py-3" type="submit" [disabled]="busy()">{{ busy() ? 'Saving...' : 'Post A Job' }}</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

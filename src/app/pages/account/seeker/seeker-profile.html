@@ -1,0 +1,116 @@
+@if (profile.loading() && !profile.value()) {
+    <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+} @else if (profile.status() === 404 || (!profile.value() && profile.error())) {
+    <!-- First visit: create the profile -->
+    <div class="bg-light rounded p-5">
+        <h4 class="mb-3">Create Your Profile</h4>
+        @if (profile.status() !== 404) { <div class="alert alert-warning">{{ profile.error() }}</div> }
+        <p>Start with the basics. You can add education, experience and skills afterwards.</p>
+        @if (basicState.message()) { <div class="alert" [class.alert-success]="basicState.ok()" [class.alert-danger]="!basicState.ok()">{{ basicState.message() }}</div> }
+        <form #cf="ngForm" (ngSubmit)="createProfile(cf)" novalidate>
+            <div class="row g-3">
+                <div class="col-md-6"><div class="form-floating">
+                    <input class="form-control" id="cFullName" name="fullName" placeholder="Full name" required [(ngModel)]="basic.fullName">
+                    <label for="cFullName">Full Name</label></div></div>
+                <div class="col-md-6"><div class="form-floating">
+                    <input class="form-control" type="email" id="cEmail" name="email" placeholder="Email" required email [(ngModel)]="basic.email">
+                    <label for="cEmail">Email</label></div></div>
+                <div class="col-md-6"><div class="form-floating">
+                    <input class="form-control" id="cMobile" name="mobile" placeholder="Mobile" required [(ngModel)]="basic.mobileNumber">
+                    <label for="cMobile">Mobile Number</label></div></div>
+                <div class="col-md-6"><div class="form-floating">
+                    <select class="form-select" id="cGender" name="gender" [(ngModel)]="basic.gender">
+                        @for (g of genders; track g) { <option [value]="g">{{ g }}</option> }
+                    </select>
+                    <label for="cGender">Gender</label></div></div>
+                <div class="col-12"><button class="btn btn-primary w-100 py-3" type="submit" [disabled]="basicState.busy()">Create Profile</button></div>
+            </div>
+        </form>
+    </div>
+} @else if (profile.value(); as p) {
+    <!-- Completion -->
+    <div class="bg-light rounded p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Profile Completion</h5>
+            <strong class="text-primary">{{ completion()?.percent ?? p.completionPercent }}%</strong>
+        </div>
+        <div class="progress mb-2" style="height: 10px;">
+            <div class="progress-bar bg-primary" [style.width.%]="completion()?.percent ?? p.completionPercent"></div>
+        </div>
+        @if (completion()?.missingSections?.length) {
+            <small class="text-muted">Missing: {{ completion()!.missingSections.join(', ') }}</small>
+        }
+    </div>
+
+    <!-- Level 1 -->
+    <div class="bg-light rounded p-4 mb-4">
+        <h5 class="mb-3">Basic Information</h5>
+        <form #bf="ngForm" (ngSubmit)="saveBasic(bf)" novalidate>
+            <div class="row g-3">
+                <div class="col-md-6"><div class="form-floating">
+                    <input class="form-control" id="fullName" name="fullName" placeholder="Full name" required [(ngModel)]="basic.fullName">
+                    <label for="fullName">Full Name</label></div></div>
+                <div class="col-md-6"><div class="form-floating">
+                    <input class="form-control" type="email" id="email" name="email" placeholder="Email" required email [(ngModel)]="basic.email">
+                    <label for="email">Email</label></div></div>
+                <div class="col-md-6"><div class="form-floating">
+                    <input class="form-control" id="mobile" name="mobile" placeholder="Mobile" required [(ngModel)]="basic.mobileNumber">
+                    <label for="mobile">Mobile Number</label></div></div>
+                <div class="col-md-6"><div class="form-floating">
+                    <select class="form-select" id="gender" name="gender" [(ngModel)]="basic.gender">
+                        @for (g of genders; track g) { <option [value]="g">{{ g }}</option> }
+                    </select>
+                    <label for="gender">Gender</label></div></div>
+                <div class="col-12 d-flex align-items-center gap-3">
+                    <button class="btn btn-primary px-4" type="submit" [disabled]="basicState.busy()">Save</button>
+                    @if (basicState.message()) { <small [class.text-danger]="!basicState.ok()" [class.text-success]="basicState.ok()">{{ basicState.message() }}</small> }
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <app-editable-list title="Education" [columns]="educationCols" [items]="p.education"
+        [busy]="sectionState['education'].busy()" [message]="sectionState['education'].message()" [ok]="sectionState['education'].ok()"
+        (save)="saveSection('education', $event)" />
+
+    <div class="bg-light rounded px-4 pt-4 pb-1 mb-n3">
+        <label class="form-label small mb-1" for="yoe">Total years of experience</label>
+        <input id="yoe" type="number" min="0" step="0.5" class="form-control form-control-sm w-auto" [(ngModel)]="yearsOfExperience">
+    </div>
+    <app-editable-list title="Experience" [columns]="experienceCols" [items]="p.experience"
+        [busy]="sectionState['experience'].busy()" [message]="sectionState['experience'].message()" [ok]="sectionState['experience'].ok()"
+        (save)="saveSection('experience', $event)" />
+
+    <app-editable-list title="Skills" [columns]="skillCols" [items]="p.skills"
+        [busy]="sectionState['skills'].busy()" [message]="sectionState['skills'].message()" [ok]="sectionState['skills'].ok()"
+        (save)="saveSection('skills', $event)" />
+
+    <app-editable-list title="Training" [columns]="trainingCols" [items]="p.training"
+        [busy]="sectionState['training'].busy()" [message]="sectionState['training'].message()" [ok]="sectionState['training'].ok()"
+        (save)="saveSection('training', $event)" />
+
+    <app-editable-list title="Certificates" [columns]="certificateCols" [items]="p.certificates"
+        [busy]="sectionState['certificates'].busy()" [message]="sectionState['certificates'].message()" [ok]="sectionState['certificates'].ok()"
+        (save)="saveSection('certificates', $event)" />
+
+    <!-- Level 3 -->
+    <div class="bg-light rounded p-4 mb-4">
+        <h5 class="mb-3">About Me</h5>
+        <div class="row g-3">
+            <div class="col-12"><div class="form-floating">
+                <textarea class="form-control" id="statement" placeholder="Statement" style="height: 90px" [(ngModel)]="about.statement"></textarea>
+                <label for="statement">Personal Statement</label></div></div>
+            <div class="col-12"><div class="form-floating">
+                <textarea class="form-control" id="bio" placeholder="Bio" style="height: 120px" [(ngModel)]="about.bio"></textarea>
+                <label for="bio">Bio</label></div></div>
+            <div class="col-12 d-flex align-items-center gap-3">
+                <button class="btn btn-primary px-4" type="button" [disabled]="aboutState.busy()" (click)="saveAbout()">Save</button>
+                @if (aboutState.message()) { <small [class.text-danger]="!aboutState.ok()" [class.text-success]="aboutState.ok()">{{ aboutState.message() }}</small> }
+            </div>
+        </div>
+    </div>
+
+    <app-editable-list title="Social Links" [columns]="linkCols" [items]="p.socialLinks"
+        [busy]="sectionState['links'].busy()" [message]="sectionState['links'].message()" [ok]="sectionState['links'].ok()"
+        (save)="saveSection('links', $event)" />
+}

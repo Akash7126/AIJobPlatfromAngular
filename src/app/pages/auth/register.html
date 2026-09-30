@@ -1,0 +1,195 @@
+<app-page-header title="Register" section="Account" sectionLink="/register" />
+
+<div class="container-xxl py-5">
+    <div class="container">
+        <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Create Your Account</h1>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-8 wow fadeInUp" data-wow-delay="0.3s">
+                @if (registered(); as account) {
+                    <!-- Activation step -->
+                    <div class="bg-light rounded p-5">
+                        @if (info()) { <div class="alert alert-success">{{ info() }}</div> }
+                        @if (error()) { <div class="alert alert-danger">{{ error() }}</div> }
+                        <form #af="ngForm" (ngSubmit)="activate(af)" novalidate>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="code" name="code" placeholder="Activation code" required
+                                               [(ngModel)]="code" #c="ngModel" [class.is-invalid]="c.invalid && c.touched" autocomplete="one-time-code">
+                                        <label for="code">Activation Code</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100 py-3" type="submit" [disabled]="busy()">Activate Account</button>
+                                </div>
+                                <div class="col-12 text-center">
+                                    Didn't get a code? <a href="#" (click)="$event.preventDefault(); resend()">Send it again</a>
+                                    &middot; <a routerLink="/login">Go to login</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                } @else {
+                    <div class="tab-class text-center">
+                        <ul class="nav nav-pills d-inline-flex justify-content-center border-bottom mb-5">
+                            <li class="nav-item">
+                                <a class="d-flex align-items-center text-start mx-3 ms-0 pb-3" [class.active]="kind() === 'seeker'" href="#" (click)="$event.preventDefault(); select('seeker')">
+                                    <h6 class="mt-n1 mb-0">Job Seeker</h6>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="d-flex align-items-center text-start mx-3 pb-3" [class.active]="kind() === 'employer'" href="#" (click)="$event.preventDefault(); select('employer')">
+                                    <h6 class="mt-n1 mb-0">Employer</h6>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="d-flex align-items-center text-start mx-3 me-0 pb-3" [class.active]="kind() === 'partner'" href="#" (click)="$event.preventDefault(); select('partner')">
+                                    <h6 class="mt-n1 mb-0">Job Site Partner</h6>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-light rounded p-5">
+                        @if (error()) { <div class="alert alert-danger">{{ error() }}</div> }
+                        <form #f="ngForm" (ngSubmit)="submit(f)" novalidate>
+                            @if (kind() === 'seeker') {
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Full Name" required
+                                                   [(ngModel)]="seeker.fullName" #fn="ngModel" [class.is-invalid]="fn.invalid && fn.touched">
+                                            <label for="fullName">Full Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="tel" class="form-control" id="mobile" name="mobile" placeholder="+8801XXXXXXXXX" required pattern="^\+?(88)?01[3-9][0-9 -]{8,12}$"
+                                                   [(ngModel)]="seeker.mobile" #m="ngModel" [class.is-invalid]="m.invalid && m.touched">
+                                            <label for="mobile">Mobile Number (+8801XXXXXXXXX)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="email" class="form-control" id="email" name="email" placeholder="Email" email
+                                                   [(ngModel)]="seeker.email" #e="ngModel" [class.is-invalid]="e.invalid && e.touched">
+                                            <label for="email">Email (optional)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="lang" name="lang" [(ngModel)]="seeker.preferredLanguage">
+                                                <option value="en">English</option>
+                                                <option value="ar">Arabic</option>
+                                            </select>
+                                            <label for="lang">Preferred Language</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required minlength="8"
+                                                   [(ngModel)]="seeker.password" #p="ngModel" [class.is-invalid]="p.invalid && p.touched" autocomplete="new-password">
+                                            <label for="password">Password (min. 8 characters)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            } @else if (kind() === 'partner') {
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="orgName" name="orgName" placeholder="Organisation" required
+                                                   [(ngModel)]="partner.organisationName" #on="ngModel" [class.is-invalid]="on.invalid && on.touched">
+                                            <label for="orgName">Organisation Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="email" class="form-control" id="contactEmail" name="contactEmail" placeholder="Email" required email
+                                                   [(ngModel)]="partner.contactEmail" #ce="ngModel" [class.is-invalid]="ce.invalid && ce.touched">
+                                            <label for="contactEmail">Contact Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="tel" class="form-control" id="partnerMobile" name="partnerMobile" placeholder="+8801XXXXXXXXX" required pattern="^\+?(88)?01[3-9][0-9 -]{8,12}$"
+                                                   [(ngModel)]="partner.mobile" #pm="ngModel" [class.is-invalid]="pm.invalid && pm.touched">
+                                            <label for="partnerMobile">Mobile Number (+8801XXXXXXXXX)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="identity" name="identity" placeholder="Identity" required
+                                                   [(ngModel)]="partner.identity" #pi="ngModel" [class.is-invalid]="pi.invalid && pi.touched">
+                                            <label for="identity">Organisation Identity (e.g. licence no.)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <input type="password" class="form-control" id="partnerPassword" name="partnerPassword" placeholder="Password" required minlength="8"
+                                                   [(ngModel)]="partner.password" #pp="ngModel" [class.is-invalid]="pp.invalid && pp.touched" autocomplete="new-password">
+                                            <label for="partnerPassword">Password (min. 8 characters)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12"><small class="text-muted">Partner accounts are activated after an administrator approves them.</small></div>
+                                </div>
+                            } @else {
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="companyName" name="companyName" placeholder="Company Name" required
+                                                   [(ngModel)]="employer.companyName" #cn="ngModel" [class.is-invalid]="cn.invalid && cn.touched">
+                                            <label for="companyName">Company Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="email" class="form-control" id="empEmail" name="empEmail" placeholder="Email" required email
+                                                   [(ngModel)]="employer.email" #ee="ngModel" [class.is-invalid]="ee.invalid && ee.touched">
+                                            <label for="empEmail">Company Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="tel" class="form-control" id="empMobile" name="empMobile" placeholder="+8801XXXXXXXXX" required pattern="^\+?(88)?01[3-9][0-9 -]{8,12}$"
+                                                   [(ngModel)]="employer.mobile" #em="ngModel" [class.is-invalid]="em.invalid && em.touched">
+                                            <label for="empMobile">Mobile Number (+8801XXXXXXXXX)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="companyId" name="companyId" placeholder="Company ID" required
+                                                   [(ngModel)]="employer.companyId" #ci="ngModel" [class.is-invalid]="ci.invalid && ci.touched">
+                                            <label for="companyId">Company ID</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="regNo" name="regNo" placeholder="Registration Number" required
+                                                   [(ngModel)]="employer.registrationNumber" #rn="ngModel" [class.is-invalid]="rn.invalid && rn.touched">
+                                            <label for="regNo">Commercial Registration No.</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="password" class="form-control" id="empPassword" name="empPassword" placeholder="Password" required minlength="8"
+                                                   [(ngModel)]="employer.password" #ep="ngModel" [class.is-invalid]="ep.invalid && ep.touched" autocomplete="new-password">
+                                            <label for="empPassword">Password (min. 8 characters)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="row g-3 mt-1">
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100 py-3" type="submit" [disabled]="busy()">{{ busy() ? 'Creating account...' : 'Register' }}</button>
+                                </div>
+                                <div class="col-12 text-center">
+                                    Already have an account? <a routerLink="/login">Login</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
